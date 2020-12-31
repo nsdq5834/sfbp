@@ -1,0 +1,10 @@
+# Parameters for the sfbp program
+#
+# BackupSource = the name file that contains the list of base directories.
+# ExcludeSource = the name of the file that contains a list of directories
+# to bypass.
+# BackupBaseLocation = the location to write the backups to.
+#
+BackupSource = SourceDirectories.txt
+ExcludeSource = SourceDirectoriesExclude.txt
+BackupBaseLocation = D:\TestBackup\@BU\
