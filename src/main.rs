@@ -226,7 +226,6 @@ fn main() {
 	    for line in pf_handle.lines() {
         let line = line.expect("Unable to read line");
 		_excl_s1.push(PathBuf::from(&line));
-		println!("_excl_s1 push {:?}", &line);
     }
 	
 		let _num_excl_s1 = _excl_s1.len();
