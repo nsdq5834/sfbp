@@ -1,11 +1,15 @@
-//  Program: sfbkup.rs
+//  Program: sfbp
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 12/29/2020
-//  Revision: 1.0.14
+//  Revision date: 12/31/2020
+//  Revision: 1.0.0
 
-//
+//	Simple File Backup Program
+//	Platform: Windows
+
+//	Bring in code we need.
+
 use log::info;
 use std::fs;
 use std::fs::File;
@@ -16,11 +20,11 @@ use walkdir::WalkDir;
 
 //	Get some local functions from lib.rs
 
-use sfbkup_rust::house_keeping;
-use sfbkup_rust::construct_lf_name;
-use sfbkup_rust::setup_logger;
-use sfbkup_rust::get_meta;
-use sfbkup_rust::make_file_writable;
+use sfbp::house_keeping;
+use sfbp::construct_lf_name;
+use sfbp::setup_logger;
+use sfbp::get_meta;
+use sfbp::make_file_writable;
 
 // Define some constants
 
