@@ -9,3 +9,6 @@ primary Windows machine.
 The coding is crude, but you have to crawl before you can walk. I hope that
 others may find the program useful, and I would welcome input on how to make
 the code more robust.
+
+SourceDirectories.txt and SourceDirectoriesExclude.txt are provided as samples
+and you would need to tailor them to your environment.
