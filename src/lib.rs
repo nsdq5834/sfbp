@@ -2,7 +2,7 @@
 ///  Author: Bill Meany
 ///  Date: 04/24/2020
 ///  Version: 1.0.0
-///  Revision date: 12/28/2020
+///  Revision date: 12/31/2020
 ///  Revision: 1.0.8
 
 use std::convert::TryInto;
