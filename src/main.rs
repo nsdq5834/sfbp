@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 12/31/2020
-//  Revision: 1.0.0
+//  Revision date: 01/03/2020
+//  Revision: 1.0.1
 
 //	Simple File Backup Program
 //	Platform: Windows
@@ -60,6 +60,7 @@ const FILE_ATTRIBUTE_EA: u32 =                  0x00040000;
 //	Executable code starts here.
 
 fn main() {
+
 	info!("Beginning program execution");
 	let mut log_file_name = String::with_capacity(255);
 	let log_file_prefix = String::from("\\Log_");
@@ -96,6 +97,9 @@ fn main() {
 	let mut _bkup_s1 = Vec::<String>::new();
 	let mut _bkup_s2 = Vec::<PathBuf>::new();
 	let mut _excl_s1 = Vec::<PathBuf>::new();
+	
+	let mut _drive_id = Vec::<String>::new();
+	let mut _drive_ct = Vec::<i32>::new();
 
 //	Do some simple housekeeping using house_keeping from lib.rs
 
@@ -197,14 +201,28 @@ fn main() {
 
 	let pf_handle = BufReader::new(fh);
 	
-	    for line in pf_handle.lines() {
-        let line = line.expect("Unable to read line");
+	for line in pf_handle.lines() {
+		let line = line.expect("Unable to read line");
 		_bkup_s1.push(line);
-    }
+	}
 	
-		let _num_bkup_s1 = _bkup_s1.len();
-		info!("Number of base directories to backup is {}",_num_bkup_s1);
-
+	let mut source_prefix = String::with_capacity(5);
+	
+	for entry in &_bkup_s1 {
+		
+		source_prefix = entry[0..2].to_string();
+		
+		if !_drive_id.contains(&source_prefix) {
+			_drive_id.push(source_prefix);
+		}
+		
+	}
+	
+	_drive_id.sort();
+	
+	let _num_bkup_s1 = _bkup_s1.len();
+	info!("Number of base directories to backup is {}",_num_bkup_s1);
+	
 }
 
 //	This code block processes the exclude directories file.
