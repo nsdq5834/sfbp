@@ -2,8 +2,10 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 01/03/2020
-//  Revision: 1.0.1
+//  Revision date: 01/10/2020
+//  Revision: 1.0.2
+
+#![allow(unused)]
 
 //	Simple File Backup Program
 //	Platform: Windows
@@ -214,6 +216,7 @@ fn main() {
 		
 		if !_drive_id.contains(&source_prefix) {
 			_drive_id.push(source_prefix);
+			_drive_ct.push(0);
 		}
 		
 	}
@@ -323,10 +326,13 @@ fn main() {
 
 {
 	
-	let mut my_count_c: i32 = 0;
-	let mut my_count_d: i32 = 0;
 	let mut my_new_dir: i32 = 0;
 	let mut entry_length: usize = 0;
+	
+	let mut drive_iter = _drive_id.iter();
+	let mut drive_count = _drive_id.len();
+	let mut drive_pos: usize = 0;
+	let mut source_prefix = String::with_capacity(5);
 	
 	let mut final_path = PathBuf::new();
 	let mut path_string = String::with_capacity(100);
@@ -336,13 +342,6 @@ fn main() {
 	for entry in &_bkup_s2 {
 
 		if entry.is_dir() {			
-				
-			if entry.starts_with("C:") {
-				my_count_c += 1;
-			}
-			if entry.starts_with("D:") {
-				my_count_d += 1;
-			}
 
 			path_string.clear();
 			path_string.push_str(&_target_base);
@@ -350,6 +349,17 @@ fn main() {
 			let temp_string = match &entry.to_str() {
 				Some(temp_string) => temp_string,
 				None => "None value",
+			};
+
+			for x in 0..drive_count {
+			
+				source_prefix.clear();
+				source_prefix.push_str(&temp_string[0..2].to_string());
+				
+				if &_drive_id[x] == &source_prefix {
+					_drive_ct[x] += 1;
+				};
+				
 			};
 			
 			entry_length = temp_string.len();
@@ -369,8 +379,9 @@ fn main() {
 		}
 	}
 
-	info!("Number of source directories on C: = {:?}", my_count_c);
-	info!("Number of source directories on D: = {:?}", my_count_d);
+	for x in 0..drive_count {
+		info!("Number of source directories on {:?} = {:?}", _drive_id[x], _drive_ct[x]);
+	}
 	info!("Number of target directories created = {:?}", my_new_dir);
 	
 }
