@@ -189,7 +189,7 @@ fn main() {
 
 //	This code block processes the source directories file.
 //	We will build the list of directories into _bkup_s1.
-
+//	We also populate _drive_id and _drive_ct for use later.
 {
 
 	let fh = match File::open(_bkup_source) {
@@ -322,16 +322,16 @@ fn main() {
 //	the result with _target_base to create the target path. We test to see if
 //	the target exists, and if it does not we will create it.
 //
-//	There are still some hardcoded constants we need to remove.
+//	We will _drive_id[?} to increment the counts in _drive_ct[?].
 
 {
 	
 	let mut my_new_dir: i32 = 0;
 	let mut entry_length: usize = 0;
 	
-	let mut drive_iter = _drive_id.iter();
+//	let mut drive_iter = _drive_id.iter();
 	let mut drive_count = _drive_id.len();
-	let mut drive_pos: usize = 0;
+//	let mut drive_pos: usize = 0;
 	let mut source_prefix = String::with_capacity(5);
 	
 	let mut final_path = PathBuf::new();
