@@ -511,6 +511,7 @@ fn main() {
 	info!("File backup operation(s) complete!");
 	info!("Total files copied = {:.0}", files_copied_f64);
 	info!("Time to perform backups = {:.2} seconds.", start_now.elapsed().as_secs_f64());
+	info!("Average duration per backup = {:.2} seconds.", start_now.elapsed().as_secs_f64() / files_copied_f64);
 	
 	if files_copied_f64 > 0.0 {
 	
