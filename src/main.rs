@@ -18,6 +18,10 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process;
+use std::time::{Duration, Instant};
+
+//	Bring in other crates.
+
 use walkdir::WalkDir;
 
 //	Get some local functions from lib.rs
@@ -64,6 +68,7 @@ const FILE_ATTRIBUTE_EA: u32 =                  0x00040000;
 fn main() {
 
 	info!("Beginning program execution");
+	
 	let mut log_file_name = String::with_capacity(255);
 	let log_file_prefix = String::from("\\Log_");
 	let mut prog_name = String::with_capacity(25);
@@ -419,6 +424,9 @@ fn main() {
 //	The following block of code performs the actual copying of files
 //	to accomplish a backup.
 
+	info!("File backup operation(s) initiated");
+	let start_now = Instant::now();
+
 {
 
 	let mut entry_length: usize = 0;	
@@ -500,7 +508,9 @@ fn main() {
 
 }
 
+	info!("File backup operation(s) complete!");
 	info!("Total files copied = {:.0}", files_copied_f64);
+	info!("Time to perform backups = {:.2} seconds.", start_now.elapsed().as_secs_f64());
 	
 	if files_copied_f64 > 0.0 {
 	
