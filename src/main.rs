@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 01/10/2020
-//  Revision: 1.0.2
+//  Revision date: 01/11/2020
+//  Revision: 1.0.3
 
 #![allow(unused)]
 
@@ -96,7 +96,7 @@ fn main() {
 	
 	let mut target_flag: bool = true;
 	
-	let mut _bkup_s1 = Vec::<String>::new();
+	let mut _bkup_s1 = Vec::<PathBuf>::new();
 	let mut _bkup_s2 = Vec::<PathBuf>::new();
 	let mut _excl_s1 = Vec::<PathBuf>::new();
 	
@@ -202,24 +202,32 @@ fn main() {
 	};
 
 	let pf_handle = BufReader::new(fh);
-	
-	for line in pf_handle.lines() {
-		let line = line.expect("Unable to read line");
-		_bkup_s1.push(line);
-	}
-	
 	let mut source_prefix = String::with_capacity(5);
 	
-	for entry in &_bkup_s1 {
-		
-		source_prefix = entry[0..2].to_string();
+	for line in pf_handle.lines() {
+	
+		let line = line.expect("Unable to read line");
+		source_prefix = line[0..2].to_string();
 		
 		if !_drive_id.contains(&source_prefix) {
 			_drive_id.push(source_prefix);
 			_drive_ct.push(0);
 		}
 		
+		_bkup_s1.push(PathBuf::from(&line));
+		
 	}
+	
+//	for entry in &_bkup_s1 {
+//		
+//		source_prefix = entry[0..2].to_string();
+//		
+//		if !_drive_id.contains(&source_prefix) {
+//			_drive_id.push(source_prefix);
+//			_drive_ct.push(0);
+//		}
+//		
+//	}
 	
 	_drive_id.sort();
 	
@@ -292,7 +300,7 @@ fn main() {
 	
 	let mut my_count: i32 = 0;
 	
-	for current_source in _bkup_s1 {
+	for current_source in &_bkup_s1 {
 		for entry in WalkDir::new(&current_source).min_depth(0).
 			sort_by(|a,b| a.file_name().cmp(b.file_name())) {
 				
@@ -311,6 +319,32 @@ fn main() {
 	info!("Number of potential backups = {:?}", _bkup_s2.len());
 }
 
+//	Following block removes entries from _bkup_s2 that have patterns that are
+//	in _excl_s1.
+
+	_bkup_s1.clear();
+	
+{
+	let mut push_flag: bool = false;
+	let excl_count = _excl_s1.len();
+	
+	for entry in &_bkup_s2 {
+	
+		for x in 0..excl_count {
+			if entry.starts_with(&_excl_s1[x]) {
+				push_flag = true;
+			}
+		}
+		
+		if !push_flag {
+			_bkup_s1.push(entry.to_path_buf());
+			push_flag = false;
+		}
+		
+	}
+	
+	info!("Number of potential backups after removing exclusions = {:?}", _bkup_s1.len());
+}
 
 //	The following code block processes the entries in the _bkup_s2 vector.
 //	These are all of the entries that were discovered in the previous block
@@ -322,24 +356,20 @@ fn main() {
 //	the result with _target_base to create the target path. We test to see if
 //	the target exists, and if it does not we will create it.
 //
-//	We will _drive_id[?} to increment the counts in _drive_ct[?].
+//	We will use _drive_id[?} to increment the counts in _drive_ct[?].
 
 {
 	
 	let mut my_new_dir: i32 = 0;
 	let mut entry_length: usize = 0;
-	
-//	let mut drive_iter = _drive_id.iter();
 	let mut drive_count = _drive_id.len();
-//	let mut drive_pos: usize = 0;
 	let mut source_prefix = String::with_capacity(5);
-	
 	let mut final_path = PathBuf::new();
 	let mut path_string = String::with_capacity(100);
 	
-	_bkup_s2.sort();
+	_bkup_s1.sort();
 		
-	for entry in &_bkup_s2 {
+	for entry in &_bkup_s1 {
 
 		if entry.is_dir() {			
 
@@ -371,7 +401,7 @@ fn main() {
 			if !final_path.is_dir() {
 				let _vbnm = match fs::create_dir_all(&final_path) {
 					Ok(_vbnm) => my_new_dir += 1,
-					Err(_vbnm) => println!("{:?} {:?}", &final_path, _vbnm)
+					Err(_vbnm) => info!("{:?} {:?}", &final_path, _vbnm)
 				};
 	
 			
@@ -395,7 +425,7 @@ fn main() {
 	let mut final_path = PathBuf::new();	
 	let mut path_string = String::with_capacity(100);
 	
-	for entry in &_bkup_s2 {
+	for entry in &_bkup_s1 {
 		
 		if entry.is_file() {
 			
@@ -476,28 +506,29 @@ fn main() {
 	
 		let bytes_copied_f64: f64 = bytes_copied_u64 as f64;
 		mean_file_size_f64 = bytes_copied_f64 / files_copied_f64;
-	
-		if bytes_copied_f64 < KILO_BYTE {
+
+		if bytes_copied_f64 <= KILO_BYTE {
 			_copy_message.push_str("Bytes copied");
 			display_bytes_f64 = bytes_copied_f64;
 		}
 
-		if bytes_copied_f64 > KILO_BYTE && bytes_copied_f64 < MEGA_BYTE {
+		if bytes_copied_f64 > KILO_BYTE && bytes_copied_f64 <= MEGA_BYTE {
 			_copy_message.push_str("KiloBytes copied");
 			display_bytes_f64 = bytes_copied_f64 / KILO_BYTE;
 		}
 	
-		if bytes_copied_f64 > MEGA_BYTE && bytes_copied_f64 < GIGA_BYTE {
+		if bytes_copied_f64 > MEGA_BYTE && bytes_copied_f64 <= GIGA_BYTE {
 			_copy_message.push_str("MegaBytes copied");
 			display_bytes_f64 = bytes_copied_f64 / MEGA_BYTE;
 		}
-		else {
+		
+		if bytes_copied_f64 > GIGA_BYTE {
 			_copy_message.push_str("Gigabytes copied");
-			display_bytes_f64 = bytes_copied_f64 / MEGA_BYTE;
+			display_bytes_f64 = bytes_copied_f64 / GIGA_BYTE;
 		}
 	
 		info!("{:.2} {}", display_bytes_f64, _copy_message);
-		info!("Average file size {:.0} bytes", mean_file_size_f64);
+		info!("Average file size {:.2} bytes", mean_file_size_f64);
 	
 	}
 	
