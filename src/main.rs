@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 01/11/2020
-//  Revision: 1.0.3
+//  Revision date: 06/27/2021
+//  Revision: 1.0.4
 
 #![allow(unused)]
 
@@ -511,9 +511,10 @@ fn main() {
 	info!("File backup operation(s) complete!");
 	info!("Total files copied = {:.0}", files_copied_f64);
 	info!("Time to perform backups = {:.2} seconds.", start_now.elapsed().as_secs_f64());
-	info!("Average duration per backup = {:.2} seconds.", start_now.elapsed().as_secs_f64() / files_copied_f64);
-	
+		
 	if files_copied_f64 > 0.0 {
+	
+		info!("Average duration per backup = {:.2} seconds.", start_now.elapsed().as_secs_f64() / files_copied_f64);
 	
 		let bytes_copied_f64: f64 = bytes_copied_u64 as f64;
 		mean_file_size_f64 = bytes_copied_f64 / files_copied_f64;
