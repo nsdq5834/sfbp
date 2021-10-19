@@ -212,6 +212,9 @@ fn main() {
 	for line in pf_handle.lines() {
 	
 		let line = line.expect("Unable to read line");
+		
+		if &line[..1] != "#" {
+			
 		source_prefix = line[0..2].to_string();
 		
 		if !_drive_id.contains(&source_prefix) {
@@ -220,6 +223,9 @@ fn main() {
 		}
 		
 		_bkup_s1.push(PathBuf::from(&line));
+		info!("Directory = {}", &line);
+		
+		}
 		
 	}
 	
@@ -338,11 +344,13 @@ fn main() {
 		for x in 0..excl_count {
 			if entry.starts_with(&_excl_s1[x]) {
 				push_flag = true;
+				info!("Exclude entry = {:?}", &entry);
 			}
 		}
 		
 		if !push_flag {
 			_bkup_s1.push(entry.to_path_buf());
+			info!("_bkup_s1 entry = {:?}", &entry);
 			push_flag = false;
 		}
 		
@@ -456,7 +464,7 @@ fn main() {
 					Ok(n) => {
 						bytes_copied_u64 += n;
 						files_copied_f64 += 1.0;
-						info!("Copied => {:?} {:?}", &entry, n);
+						info!("New Copied => {:?} {:?}", &entry, n);
 					},
 					Err(err) => info!("fs::copy error {:?}", err),
 				};
@@ -492,7 +500,7 @@ fn main() {
 							Ok(n) => {
 								bytes_copied_u64 += n;
 								files_copied_f64 += 1.0;
-								info!("Copied => {:?} {:?}", &entry, n);
+								info!("Existing Copied => {:?} {:?}", &entry, n);
 							},
 							Err(err) => info!("{:?} {:?}", &entry, err),					   
 						};
