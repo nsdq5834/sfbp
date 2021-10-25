@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 06/27/2021
-//  Revision: 1.0.4
+//  Revision date: 10/25/2021
+//  Revision: 1.0.5
 
 #![allow(unused)]
 
@@ -223,7 +223,7 @@ fn main() {
 		}
 		
 		_bkup_s1.push(PathBuf::from(&line));
-		info!("Directory = {}", &line);
+		info!("Base Directory = {}", &line);
 		
 		}
 		
@@ -241,6 +241,8 @@ fn main() {
 //	}
 	
 	_drive_id.sort();
+	let _num_drive_id = _drive_id.len();
+	info!("Number of source drives is {}", _num_drive_id);
 	
 	let _num_bkup_s1 = _bkup_s1.len();
 	info!("Number of base directories to backup is {}",_num_bkup_s1);
@@ -344,13 +346,13 @@ fn main() {
 		for x in 0..excl_count {
 			if entry.starts_with(&_excl_s1[x]) {
 				push_flag = true;
-				info!("Exclude entry = {:?}", &entry);
+//				info!("Exclude entry = {:?}", &entry);
 			}
 		}
 		
 		if !push_flag {
 			_bkup_s1.push(entry.to_path_buf());
-			info!("_bkup_s1 entry = {:?}", &entry);
+//			info!("_bkup_s1 entry = {:?}", &entry);
 			push_flag = false;
 		}
 		
@@ -464,7 +466,7 @@ fn main() {
 					Ok(n) => {
 						bytes_copied_u64 += n;
 						files_copied_f64 += 1.0;
-						info!("New Copied => {:?} {:?}", &entry, n);
+						info!("New copy => {:?} {:?}", &entry, n);
 					},
 					Err(err) => info!("fs::copy error {:?}", err),
 				};
@@ -483,30 +485,32 @@ fn main() {
 			             &mut target_access_time,
 			             &mut target_last_write_time,
 			             &mut target_filesize);
-				}
-			if source_last_write_time != target_last_write_time ||
-				source_filesize != target_filesize {	
+				
+				
+				if source_last_write_time != target_last_write_time ||
+					source_filesize != target_filesize {	
   
-				   	if target_file_attrib & FILE_ATTRIBUTE_READONLY ==
-						FILE_ATTRIBUTE_READONLY {
-							target_flag = true;
-							make_file_writable(&final_path, &mut target_flag);
-						}
+						if target_file_attrib & FILE_ATTRIBUTE_READONLY ==
+							FILE_ATTRIBUTE_READONLY {
+								target_flag = true;
+								make_file_writable(&final_path, &mut target_flag);
+							}
 						
-					if !target_flag { println!("Target flag is false") };
+						if !target_flag { println!("Target flag is false") };
 					
-					if target_flag {
-						match fs::copy(&entry, &final_path) {
-							Ok(n) => {
-								bytes_copied_u64 += n;
-								files_copied_f64 += 1.0;
-								info!("Existing Copied => {:?} {:?}", &entry, n);
-							},
-							Err(err) => info!("{:?} {:?}", &entry, err),					   
-						};
-					}			   
+						if target_flag {
+							match fs::copy(&entry, &final_path) {
+								Ok(n) => {
+									bytes_copied_u64 += n;
+									files_copied_f64 += 1.0;
+									info!("Copy refresh => {:?} {:?}", &entry, n);
+								},
+								Err(err) => info!("{:?} {:?}", &entry, err),					   
+							};
+						}			   
 			   
-			}
+					}
+				}
 			
 		}
 		
