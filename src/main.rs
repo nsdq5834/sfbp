@@ -69,6 +69,8 @@ fn main() {
 
 	info!("Beginning program execution");
 	
+//	All of the variable we define here are in the scope of the entire program.
+
 	let mut log_file_name = String::with_capacity(255);
 	let log_file_prefix = String::from("\\Log_");
 	let mut prog_name = String::with_capacity(25);
@@ -81,6 +83,8 @@ fn main() {
 	let bytes_copied_f64: f64 = 0.0;
 	let mut display_bytes_f64: f64 = 0.0;
 	let mut files_copied_f64: f64 = 0.0;
+	let mut copy_new_f64: f64 = 0.0;
+	let mut copy_ref_f64: f64 = 0.0;
 	let mut mean_file_size_f64: f64 = 0.0;
 	
 //	Define some mutable variable we will use for file metadata.
@@ -466,7 +470,8 @@ fn main() {
 					Ok(n) => {
 						bytes_copied_u64 += n;
 						files_copied_f64 += 1.0;
-						info!("New copy => {:?} {:?}", &entry, n);
+						copy_new_f64 += 1.0;
+						info!("Copy new => {:?} {:?}", &entry, n);
 					},
 					Err(err) => info!("fs::copy error {:?}", err),
 				};
@@ -503,7 +508,8 @@ fn main() {
 								Ok(n) => {
 									bytes_copied_u64 += n;
 									files_copied_f64 += 1.0;
-									info!("Copy refresh => {:?} {:?}", &entry, n);
+									copy_ref_f64 += 1.0;
+									info!("Copy ref => {:?} {:?}", &entry, n);
 								},
 								Err(err) => info!("{:?} {:?}", &entry, err),					   
 							};
@@ -520,8 +526,12 @@ fn main() {
 
 }
 
+//	Output some information and then terminate the execution.
+
 	info!("File backup operation(s) complete!");
-	info!("Total files copied = {:.0}", files_copied_f64);
+	info!("Total files copied =     {:.0}", files_copied_f64);
+	info!("Total new files copied = {:.0}", copy_new_f64);
+	info!("Total fles refreshed =   {:.0}", copy_ref_f64);
 	info!("Time to perform backups = {:.2} seconds.", start_now.elapsed().as_secs_f64());
 		
 	if files_copied_f64 > 0.0 {
