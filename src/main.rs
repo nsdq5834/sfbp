@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 10/25/2021
-//  Revision: 1.0.5
+//  Revision date: 11/21/2021
+//  Revision: 1.0.6
 
 #![allow(unused)]
 
@@ -319,13 +319,11 @@ fn main() {
 
     {
         let mut push_flag: bool = false;
-        let excl_count = _excl_s1.len();
 
         for entry in &_bkup_s2 {
-            for x in 0..excl_count {
-                if entry.starts_with(&_excl_s1[x]) {
+			for x in _excl_s1.iter().take(_excl_s1.len()) {
+	            if entry.starts_with(x) {
                     push_flag = true;
-                    //				info!("Exclude entry = {:?}", &entry);
                 }
             }
 
