@@ -31,8 +31,8 @@ pub fn house_keeping(nparm: u16, pgm_name: &mut String) {
     }
 
     let cli_arg01 = &cli_args[0];
-    let cli_arg01_tokens: Vec<&str> = cli_arg01.split("\\").collect();
-    let full_prog_name: Vec<&str> = cli_arg01_tokens[2].split(".").collect();
+    let cli_arg01_tokens: Vec<&str> = cli_arg01.split('\\').collect();
+    let full_prog_name: Vec<&str> = cli_arg01_tokens[2].split('.').collect();
     let just_program: String = full_prog_name[0].to_owned();
     pgm_name.push_str(&just_program);
 }
