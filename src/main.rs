@@ -157,7 +157,7 @@ fn main() {
         for line in pf_handle.lines() {
             let line = line.expect("Unable to read line");
             if &line[..1] != "#" {
-                let bkup_parms: Vec<&str> = line.split("=").collect();
+                let bkup_parms: Vec<&str> = line.split('=').collect();
                 if bkup_parms[0].trim() == "BackupSource" {
                     _bkup_source = bkup_parms[1].trim().to_string();
                 }
