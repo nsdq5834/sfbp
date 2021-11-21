@@ -123,7 +123,7 @@ pub fn setup_logger(lfn: &str, stdflg: bool) -> Result<(), fern::InitError> {
 //	my_filesize size of the file in bytes.
 
 pub fn get_meta(
-    file_entry: &PathBuf,
+    file_entry: &Path,
     my_file_attrib: &mut u32,
     my_creation_time: &mut u64,
     my_access_time: &mut u64,
@@ -151,7 +151,7 @@ pub fn get_meta(
 //	file_entry reference to a path buffer for the file we want to work on.
 //	file_flag boolean used to indicate success or failure.
 
-pub fn make_file_writable(file_entry: &PathBuf, file_flag: &mut bool) {
+pub fn make_file_writable(file_entry: &Path, file_flag: &mut bool) {
     let _metadata = match fs::metadata(file_entry) {
         Ok(_metadata) => {
             let mut _my_perms = _metadata.permissions();
