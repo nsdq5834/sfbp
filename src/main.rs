@@ -72,11 +72,11 @@ fn main() {
 
     let mut log_file_name = String::with_capacity(255);
     let log_file_prefix = String::from("\\Log_");
-    let mut prog_name = String::with_capacity(25);
-    let mut _bkup_source = String::new();
-    let mut _exclude_source = String::new();
-    let mut _target_base = String::new();
-    let mut _copy_message = String::new();
+    let mut program_name = String::with_capacity(25);
+    let mut backup_source = String::new();
+    let mut exclude_source = String::new();
+    let mut target_base = String::new();
+    let mut copy_msg_text = String::new();
 
     let mut bytes_copied_u64: u64 = 0;
     let bytes_copied_f64: f64 = 0.0;
@@ -108,16 +108,16 @@ fn main() {
     let mut bkup_list_2 = Vec::<PathBuf>::new();
     let mut exclude_list_1 = Vec::<PathBuf>::new();
 
-    let mut _drive_id = Vec::<String>::new();
-    let mut _drive_ct = Vec::<i32>::new();
+    let mut hard_drive_id = Vec::<String>::new();
+    let mut hard_drive_ct = Vec::<i32>::new();
 
     //	Do some simple housekeeping using house_keeping from lib.rs
 
-    house_keeping(NUMB_PARM, &mut prog_name);
+    house_keeping(NUMB_PARM, &mut program_name);
 
     //	Build the log file name using construct_lf_name from lib.rs
 
-    construct_lf_name(&mut log_file_name, &log_file_prefix, &prog_name);
+    construct_lf_name(&mut log_file_name, &log_file_prefix, &program_name);
 
     //	Create the log file using setup_logger from lib.rs
 
@@ -132,7 +132,7 @@ fn main() {
     //	parameter file go away when we are done with them.
 
     {
-        let mut parm_file = prog_name.clone();
+        let mut parm_file = program_name.clone();
         parm_file.push_str(".parms");
 
         info!("Attempting to open {}", parm_file);
@@ -140,9 +140,9 @@ fn main() {
         let fh = match File::open(&parm_file) {
             Ok(file) => file,
             Err(err) => {
-                info!("{}", err);
+                info!("{}  {}", &parm_file, err);
                 info!("Terminating program execution");
-                process::exit(16);
+                process::exit(0);
             }
         };
 
@@ -155,46 +155,54 @@ fn main() {
         let pf_handle = BufReader::new(fh);
 
         for line in pf_handle.lines() {
+			
             let line = line.expect("Unable to read line");
+			
             if &line[..1] != "#" {
+				
                 let bkup_parms: Vec<&str> = line.split('=').collect();
+				
                 if bkup_parms[0].trim() == "BackupSource" {
-                    _bkup_source = bkup_parms[1].trim().to_string();
+                    backup_source = bkup_parms[1].trim().to_string();
                 }
+				
                 if bkup_parms[0].trim() == "ExcludeSource" {
-                    _exclude_source = bkup_parms[1].trim().to_string();
+                    exclude_source = bkup_parms[1].trim().to_string();
                 }
+				
                 if bkup_parms[0].trim() == "BackupBaseLocation" {
-                    _target_base = bkup_parms[1].trim().to_string();
+                    target_base = bkup_parms[1].trim().to_string();
                 }
             }
+			
         }
 
-        info!("Source directory list is {}", _bkup_source);
-        info!("Exclude directory list is {}", _exclude_source);
-        info!("Target backup location is {}", _target_base);
-
-        if _bkup_source.is_empty() {
+        if backup_source.is_empty() {
             info!("No source directory list provided");
             std::process::exit(exitcode::CONFIG);
         }
 
-        if _exclude_source.is_empty() {
+        if exclude_source.is_empty() {
             info!("No exclude directory list provided");
             std::process::exit(exitcode::CONFIG);
         }
 
-        if _target_base.is_empty() {
+        if target_base.is_empty() {
             info!("No target directory base provided");
             std::process::exit(exitcode::CONFIG);
         }
+		
+		info!("Source directory list is {}", backup_source);
+        info!("Exclude directory list is {}", exclude_source);
+        info!("Target backup location is {}", target_base);
+		
     }
 
     //	This code block processes the source directories file.
     //	We will build the list of directories into bkup_list_1.
-    //	We also populate _drive_id and _drive_ct for use later.
+    //	We also populate hard_drive_id and hard_drive_ct for use later.
     {
-        let fh = match File::open(_bkup_source) {
+        let fh = match File::open(backup_source) {
             Ok(file) => file,
             Err(err) => {
                 info!("{}", err);
@@ -212,9 +220,9 @@ fn main() {
             if &line[..1] != "#" {
                 source_prefix = line[0..2].to_string();
 
-                if !_drive_id.contains(&source_prefix) {
-                    _drive_id.push(source_prefix);
-                    _drive_ct.push(0);
+                if !hard_drive_id.contains(&source_prefix) {
+                    hard_drive_id.push(source_prefix);
+                    hard_drive_ct.push(0);
                 }
 
                 bkup_list_1.push(PathBuf::from(&line));
@@ -224,10 +232,10 @@ fn main() {
 
         //	Drive list will be small, but we will sort it anyway
 
-        _drive_id.sort();
+        hard_drive_id.sort();
 
-        let _num_drive_id = _drive_id.len();
-        info!("Number of source drives is {}", _num_drive_id);
+        let _numhard_drive_id = hard_drive_id.len();
+        info!("Number of source drives is {}", _numhard_drive_id);
 
         let _numbkup_list_1 = bkup_list_1.len();
         info!("Number of base directories to backup is {}", _numbkup_list_1);
@@ -237,7 +245,7 @@ fn main() {
     //	We will build the list of exclude directories into exclude_list_1.
 
     {
-        let fh = match File::open(_exclude_source) {
+        let fh = match File::open(exclude_source) {
             Ok(file) => file,
             Err(err) => {
                 info!("{}", err);
@@ -262,7 +270,7 @@ fn main() {
         //	backup directory and validates that it is a directory.
 
         let mut _work_path_buf = PathBuf::new();
-        _work_path_buf.push(&_target_base);
+        _work_path_buf.push(&target_base);
 
         get_meta(
             &_work_path_buf,
@@ -274,9 +282,9 @@ fn main() {
         );
 
         if source_file_attrib & FILE_ATTRIBUTE_DIRECTORY == FILE_ATTRIBUTE_DIRECTORY {
-            info!("{} validated as a directory structure", _target_base);
+            info!("{} validated as a directory structure", target_base);
         } else {
-            info!("{} is not a valid directory structure!", _target_base);
+            info!("{} is not a valid directory structure!", target_base);
             info!("Terminating program execution");
             std::process::exit(exitcode::OK);
         }
@@ -347,15 +355,15 @@ fn main() {
     //	associated target directory exists. To do this, we take a path entry in
     //	bkup_list_2 and test to see if it is a directory. If it is, then we will
     //	make a string copy of the path, strip out the colon and then prefix
-    //	the result with _target_base to create the target path. We test to see if
+    //	the result with target_base to create the target path. We test to see if
     //	the target exists, and if it does not we will create it.
     //
-    //	We will use _drive_id[?} to increment the counts in _drive_ct[?].
+    //	We will use hard_drive_id[?} to increment the counts in hard_drive_ct[?].
 
     {
         let mut my_new_dir: i32 = 0;
         let mut entry_length: usize = 0;
-        let mut drive_count = _drive_id.len();
+        let mut drive_count = hard_drive_id.len();
         let mut source_prefix = String::with_capacity(5);
         let mut final_path = PathBuf::new();
         let mut path_string = String::with_capacity(100);
@@ -365,7 +373,7 @@ fn main() {
         for entry in &bkup_list_1 {
             if entry.is_dir() {
                 path_string.clear();
-                path_string.push_str(&_target_base);
+                path_string.push_str(&target_base);
 
                 let temp_string = match &entry.to_str() {
                     Some(temp_string) => temp_string,
@@ -376,8 +384,8 @@ fn main() {
                     source_prefix.clear();
                     source_prefix.push_str(&temp_string[0..2].to_string());
 
-                    if _drive_id[x] == source_prefix {
-                        _drive_ct[x] += 1;
+                    if hard_drive_id[x] == source_prefix {
+                        hard_drive_ct[x] += 1;
                     };
                 }
 
@@ -399,7 +407,7 @@ fn main() {
         for x in 0..drive_count {
             info!(
                 "Number of source directories on {:?} = {:?}",
-                _drive_id[x], _drive_ct[x]
+                hard_drive_id[x], hard_drive_ct[x]
             );
         }
         info!("Number of target directories created = {:?}", my_new_dir);
@@ -418,7 +426,7 @@ fn main() {
 
         for entry in &bkup_list_1 {
             if entry.is_file() {
-                path_string.push_str(&_target_base);
+                path_string.push_str(&target_base);
 
                 let temp_string = match &entry.to_str() {
                     Some(temp_string) => temp_string,
@@ -513,26 +521,26 @@ fn main() {
         mean_file_size_f64 = bytes_copied_f64 / files_copied_f64;
 
         if bytes_copied_f64 <= KILO_BYTE {
-            _copy_message.push_str("Bytes copied");
+            copy_msg_text.push_str("Bytes copied");
             display_bytes_f64 = bytes_copied_f64;
         }
 
         if bytes_copied_f64 > KILO_BYTE && bytes_copied_f64 <= MEGA_BYTE {
-            _copy_message.push_str("KiloBytes copied");
+            copy_msg_text.push_str("KiloBytes copied");
             display_bytes_f64 = bytes_copied_f64 / KILO_BYTE;
         }
 
         if bytes_copied_f64 > MEGA_BYTE && bytes_copied_f64 <= GIGA_BYTE {
-            _copy_message.push_str("MegaBytes copied");
+            copy_msg_text.push_str("MegaBytes copied");
             display_bytes_f64 = bytes_copied_f64 / MEGA_BYTE;
         }
 
         if bytes_copied_f64 > GIGA_BYTE {
-            _copy_message.push_str("Gigabytes copied");
+            copy_msg_text.push_str("Gigabytes copied");
             display_bytes_f64 = bytes_copied_f64 / GIGA_BYTE;
         }
 
-        info!("{:.2} {}", display_bytes_f64, _copy_message);
+        info!("{:.2} {}", display_bytes_f64, copy_msg_text);
         info!("Average file size {:.2} bytes", mean_file_size_f64);
     }
 
