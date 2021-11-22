@@ -104,9 +104,9 @@ fn main() {
 
     let mut target_flag: bool = true;
 
-    let mut _bkup_s1 = Vec::<PathBuf>::new();
-    let mut _bkup_s2 = Vec::<PathBuf>::new();
-    let mut _excl_s1 = Vec::<PathBuf>::new();
+    let mut bkup_list_1 = Vec::<PathBuf>::new();
+    let mut bkup_list_2 = Vec::<PathBuf>::new();
+    let mut exclude_list_1 = Vec::<PathBuf>::new();
 
     let mut _drive_id = Vec::<String>::new();
     let mut _drive_ct = Vec::<i32>::new();
@@ -191,7 +191,7 @@ fn main() {
     }
 
     //	This code block processes the source directories file.
-    //	We will build the list of directories into _bkup_s1.
+    //	We will build the list of directories into bkup_list_1.
     //	We also populate _drive_id and _drive_ct for use later.
     {
         let fh = match File::open(_bkup_source) {
@@ -217,7 +217,7 @@ fn main() {
                     _drive_ct.push(0);
                 }
 
-                _bkup_s1.push(PathBuf::from(&line));
+                bkup_list_1.push(PathBuf::from(&line));
                 info!("Base Directory = {}", &line);
             }
         }
@@ -229,12 +229,12 @@ fn main() {
         let _num_drive_id = _drive_id.len();
         info!("Number of source drives is {}", _num_drive_id);
 
-        let _num_bkup_s1 = _bkup_s1.len();
-        info!("Number of base directories to backup is {}", _num_bkup_s1);
+        let _numbkup_list_1 = bkup_list_1.len();
+        info!("Number of base directories to backup is {}", _numbkup_list_1);
     }
 
     //	This code block processes the exclude directories file.
-    //	We will build the list of exclude directories into _excl_s1.
+    //	We will build the list of exclude directories into exclude_list_1.
 
     {
         let fh = match File::open(_exclude_source) {
@@ -250,11 +250,11 @@ fn main() {
 
         for line in pf_handle.lines() {
             let line = line.expect("Unable to read line");
-            _excl_s1.push(PathBuf::from(&line));
+            exclude_list_1.push(PathBuf::from(&line));
         }
 
-        let _num_excl_s1 = _excl_s1.len();
-        info!("Number of directories to exclude is {}", _num_excl_s1);
+        let _numexclude_list_1 = exclude_list_1.len();
+        info!("Number of directories to exclude is {}", _numexclude_list_1);
     }
 
     {
@@ -286,13 +286,13 @@ fn main() {
     //	Next step is to build a list of all the files and directories that may
     //	be candidates for a backup.
     //
-    //	_bkup_s1 contains the preliminary list of source directories.
+    //	bkup_list_1 contains the preliminary list of source directories.
     //
 
     {
         let mut my_count: i32 = 0;
 
-        for current_source in &_bkup_s1 {
+        for current_source in &bkup_list_1 {
             for entry in WalkDir::new(&current_source)
                 .min_depth(0)
                 .sort_by(|a, b| a.file_name().cmp(b.file_name()))
@@ -300,7 +300,7 @@ fn main() {
                 match entry {
                     Ok(entry) => {
                         my_count += 1;
-                        _bkup_s2.push(entry.path().to_path_buf());
+                        bkup_list_2.push(entry.path().to_path_buf());
                     }
                     Err(entry) => {
                         info!("Error obtaining directory entry {:?}", entry);
@@ -309,43 +309,43 @@ fn main() {
             }
         }
 
-        info!("Number of potential backups = {:?}", _bkup_s2.len());
+        info!("Number of potential backups = {:?}", bkup_list_2.len());
     }
 
-    //	Following block removes entries from _bkup_s2 that have patterns that are
-    //	in _excl_s1.
+    //	Following block removes entries from bkup_list_2 that have patterns that are
+    //	in exclude_list_1.
 
-    _bkup_s1.clear();
+    bkup_list_1.clear();
 
     {
         let mut push_flag: bool = false;
 
-        for entry in &_bkup_s2 {
-			for x in _excl_s1.iter().take(_excl_s1.len()) {
+        for entry in &bkup_list_2 {
+			for x in exclude_list_1.iter().take(exclude_list_1.len()) {
 	            if entry.starts_with(x) {
                     push_flag = true;
                 }
             }
 
             if !push_flag {
-                _bkup_s1.push(entry.to_path_buf());
-                //			info!("_bkup_s1 entry = {:?}", &entry);
+                bkup_list_1.push(entry.to_path_buf());
+                //			info!("bkup_list_1 entry = {:?}", &entry);
                 push_flag = false;
             }
         }
 
         info!(
             "Number of potential backups after removing exclusions = {:?}",
-            _bkup_s1.len()
+            bkup_list_1.len()
         );
     }
 
-    //	The following code block processes the entries in the _bkup_s2 vector.
+    //	The following code block processes the entries in the bkup_list_2 vector.
     //	These are all of the entries that were discovered in the previous block
     //	and are either a directory or a file entry. The purpose of this block
     //	is to take each entry that is a source directory and determine if the
     //	associated target directory exists. To do this, we take a path entry in
-    //	_bkup_s2 and test to see if it is a directory. If it is, then we will
+    //	bkup_list_2 and test to see if it is a directory. If it is, then we will
     //	make a string copy of the path, strip out the colon and then prefix
     //	the result with _target_base to create the target path. We test to see if
     //	the target exists, and if it does not we will create it.
@@ -360,9 +360,9 @@ fn main() {
         let mut final_path = PathBuf::new();
         let mut path_string = String::with_capacity(100);
 
-        _bkup_s1.sort();
+        bkup_list_1.sort();
 
-        for entry in &_bkup_s1 {
+        for entry in &bkup_list_1 {
             if entry.is_dir() {
                 path_string.clear();
                 path_string.push_str(&_target_base);
@@ -416,7 +416,7 @@ fn main() {
         let mut final_path = PathBuf::new();
         let mut path_string = String::with_capacity(100);
 
-        for entry in &_bkup_s1 {
+        for entry in &bkup_list_1 {
             if entry.is_file() {
                 path_string.push_str(&_target_base);
 
