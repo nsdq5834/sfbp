@@ -140,7 +140,7 @@ fn main() {
         let fh = match File::open(&parm_file) {
             Ok(file) => file,
             Err(err) => {
-                info!("{}  {}", &parm_file, err);
+                info!("{}", err);
                 info!("Terminating program execution");
                 process::exit(0);
             }
@@ -176,6 +176,9 @@ fn main() {
             }
 			
         }
+		
+//	Check to be sure we have the three needed values. Error message and exit
+//	if we do not.
 
         if backup_source.is_empty() {
             info!("No source directory list provided");
@@ -269,11 +272,11 @@ fn main() {
         //	Following code block obtains the metadata about the provided target
         //	backup directory and validates that it is a directory.
 
-        let mut _work_path_buf = PathBuf::new();
-        _work_path_buf.push(&target_base);
+        let mut work_path_buffer = PathBuf::new();
+        work_path_buffer.push(&target_base);
 
         get_meta(
-            &_work_path_buf,
+            &work_path_buffer,
             &mut source_file_attrib,
             &mut source_creation_time,
             &mut source_access_time,
@@ -286,7 +289,7 @@ fn main() {
         } else {
             info!("{} is not a valid directory structure!", target_base);
             info!("Terminating program execution");
-            std::process::exit(exitcode::OK);
+            process::exit(0);
         }
     }
 
@@ -295,6 +298,7 @@ fn main() {
     //	be candidates for a backup.
     //
     //	bkup_list_1 contains the preliminary list of source directories.
+	//  bkup_list_2 will contain the list of all potential source directories.
     //
 
     {
@@ -322,6 +326,7 @@ fn main() {
 
     //	Following block removes entries from bkup_list_2 that have patterns that are
     //	in exclude_list_1.
+	//  Clear bkup_list_1 so we can build the final list of source directories.
 
     bkup_list_1.clear();
 
