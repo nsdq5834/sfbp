@@ -66,6 +66,7 @@ const FILE_ATTRIBUTE_EA: u32 = 0x00040000;
 //	Executable code starts here.
 
 fn main() {
+	
     info!("Beginning program execution");
 
     //	All of the variable we define here are in the scope of the entire program.
@@ -127,6 +128,8 @@ fn main() {
     //	Log file has been opened so we can proceed.
 
     info!("Beginning program execution");
+    info!("File backup operation(s) initiated");
+    let start_now = Instant::now();
 
     //	Construct the name of our parameter file, and then create a path to it.
     //	Create a code block so that objects, variable, etc. related to the
@@ -229,7 +232,7 @@ fn main() {
                     hard_drive_ct.push(0);
                 }
 
-                bkup_list_1.push(PathBuf::from(&line));
+                bkup_master.push(PathBuf::from(&line));
                 info!("Base Directory = {}", &line);
             }
         }
@@ -241,8 +244,8 @@ fn main() {
         let _numhard_drive_id = hard_drive_id.len();
         info!("Number of source drives is {}", _numhard_drive_id);
 
-        let _numbkup_list_1 = bkup_list_1.len();
-        info!("Number of base directories to backup is {}", _numbkup_list_1);
+        let _numbkup_master = bkup_list_1.len();
+        info!("Number of base directories to backup is {}", _numbkup_master);
     }
 
     //	This code block processes the exclude directories file.
@@ -298,15 +301,24 @@ fn main() {
     //	Next step is to build a list of all the files and directories that may
     //	be candidates for a backup.
     //
-    //	bkup_list_1 contains the preliminary list of source directories.
+    //	bkup_master contains the list of source directories from the source file.
+	//	bkup_list_1 contains the preliminary list of source directories in current directory.
 	//  bkup_list_2 will contain the list of all potential source directories.
     //
 
-{
-	
+
+	for current_source_entry in &bkup_master {
+		
+		let mut my_count: i32 = 0;
+		let mut my_new_dir: i32 = 0;
+		bkup_list_1.clear();
+		
+		bkup_list_1.push(current_source_entry.to_path_buf());
+//		println!("Current entry in bkup_list_1 {:?}", &bkup_list_1);
+		
 		{
 		
-        let mut my_count: i32 = 0;
+ //       let mut my_count: i32 = 0;
 
         for current_source in &bkup_list_1 {
 			info!("Examining the directory structure of {:?}", &current_source);
@@ -327,7 +339,7 @@ fn main() {
         }
 
         info!("Number of potential backups = {:?}", bkup_list_2.len());
-    }
+		}
 
     //	Following block removes entries from bkup_list_2 that have patterns that are
     //	in exclude_list_1.
@@ -357,6 +369,8 @@ fn main() {
             bkup_list_1.len()
         );
     }
+	
+	bkup_list_2.clear();
 
     //	The following code block processes the entries in the bkup_list_2 vector.
     //	These are all of the entries that were discovered in the previous block
@@ -371,7 +385,7 @@ fn main() {
     //	We will use hard_drive_id[?} to increment the counts in hard_drive_ct[?].
 
     {
-        let mut my_new_dir: i32 = 0;
+//        let mut my_new_dir: i32 = 0;
         let mut entry_length: usize = 0;
         let mut drive_count = hard_drive_id.len();
         let mut source_prefix = String::with_capacity(5);
@@ -430,9 +444,7 @@ fn main() {
     //	The following block of code performs the actual copying of files
     //	to accomplish a backup.
 
-    info!("File backup operation(s) initiated");
-    let start_now = Instant::now();
-
+   
     {
         let mut entry_length: usize = 0;
         let mut final_path = PathBuf::new();
@@ -511,12 +523,14 @@ fn main() {
 
             final_path.clear();
             path_string.clear();
+
         }
     }
+	}
 
 //	Close outer code block here
 
-}
+
     //	Output some information and then terminate the execution.
 
     info!("File backup operation(s) complete!");
