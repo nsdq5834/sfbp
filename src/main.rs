@@ -305,6 +305,7 @@ fn main() {
         let mut my_count: i32 = 0;
 
         for current_source in &bkup_list_1 {
+			info!("Examining the directory structure of {:?}", &current_source);
             for entry in WalkDir::new(&current_source)
                 .min_depth(0)
                 .sort_by(|a, b| a.file_name().cmp(b.file_name()))
@@ -342,7 +343,7 @@ fn main() {
 
             if !push_flag {
                 bkup_list_1.push(entry.to_path_buf());
-                //			info!("bkup_list_1 entry = {:?}", &entry);
+//                info!("bkup_list_1 entry = {:?}", &entry);
                 push_flag = false;
             }
         }
@@ -373,7 +374,8 @@ fn main() {
         let mut final_path = PathBuf::new();
         let mut path_string = String::with_capacity(100);
 
-        bkup_list_1.sort();
+		bkup_list_1.sort();
+		println!("bkup_list_1 size is {:?}", bkup_list_1.len());
 
         for entry in &bkup_list_1 {
             if entry.is_dir() {
@@ -402,7 +404,10 @@ fn main() {
 
                 if !final_path.is_dir() {
                     let _vbnm = match fs::create_dir_all(&final_path) {
-                        Ok(_vbnm) => my_new_dir += 1,
+                        Ok(_vbnm) => {
+							my_new_dir += 1;
+							info!("Created directory {:?}",&final_path);
+						}
                         Err(_vbnm) => info!("{:?} {:?}", &final_path, _vbnm),
                     };
                 }
@@ -427,7 +432,7 @@ fn main() {
     {
         let mut entry_length: usize = 0;
         let mut final_path = PathBuf::new();
-        let mut path_string = String::with_capacity(100);
+        let mut path_string = String::with_capacity(255);
 
         for entry in &bkup_list_1 {
             if entry.is_file() {
@@ -546,7 +551,31 @@ fn main() {
         }
 
         info!("{:.2} {}", display_bytes_f64, copy_msg_text);
-        info!("Average file size {:.2} bytes", mean_file_size_f64);
+		
+		copy_msg_text.clear();
+		
+		if mean_file_size_f64 < KILO_BYTE {
+			copy_msg_text.push_str("Bytes");
+			display_bytes_f64 = mean_file_size_f64;
+		}
+		
+        if mean_file_size_f64 > KILO_BYTE && mean_file_size_f64 <= MEGA_BYTE {
+            copy_msg_text.push_str("KiloBytes");
+            display_bytes_f64 = mean_file_size_f64 / KILO_BYTE;
+        }
+
+        if mean_file_size_f64 > MEGA_BYTE && mean_file_size_f64 <= GIGA_BYTE {
+            copy_msg_text.push_str("MegaBytes");
+            display_bytes_f64 = mean_file_size_f64 / MEGA_BYTE;
+        }
+
+        if mean_file_size_f64 > GIGA_BYTE {
+            copy_msg_text.push_str("Gigabytes");
+            display_bytes_f64 = mean_file_size_f64 / GIGA_BYTE;
+        }		
+		
+        info!("Average file size {:.2} {}", display_bytes_f64, copy_msg_text);
+		
     }
 
     info!("Terminating program execution");
