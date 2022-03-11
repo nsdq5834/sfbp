@@ -2,7 +2,7 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 11/21/2021
+//  Revision date: 14/11/2022
 //  Revision: 1.0.6
 
 #![allow(unused)]
@@ -104,7 +104,8 @@ fn main() {
 
     let mut target_flag: bool = true;
 
-    let mut bkup_list_1 = Vec::<PathBuf>::new();
+    let mut bkup_master = Vec::<PathBuf>::new();
+	let mut bkup_list_1 = Vec::<PathBuf>::new();
     let mut bkup_list_2 = Vec::<PathBuf>::new();
     let mut exclude_list_1 = Vec::<PathBuf>::new();
 
@@ -301,7 +302,10 @@ fn main() {
 	//  bkup_list_2 will contain the list of all potential source directories.
     //
 
-    {
+{
+	
+		{
+		
         let mut my_count: i32 = 0;
 
         for current_source in &bkup_list_1 {
@@ -510,6 +514,9 @@ fn main() {
         }
     }
 
+//	Close outer code block here
+
+}
     //	Output some information and then terminate the execution.
 
     info!("File backup operation(s) complete!");
