@@ -4,6 +4,7 @@
 ///  Version: 1.0.0
 ///  Revision date: 11/21/2021
 ///  Revision: 1.0.10
+
 use log::info;
 use std::convert::TryInto;
 use std::env;
@@ -23,11 +24,13 @@ use std::process;
 //
 
 pub fn house_keeping(nparm: u16, pgm_name: &mut String) {
+	
     let cli_args: Vec<String> = env::args().collect();
 
     if cli_args.len() != nparm.try_into().unwrap() {
         println!("Incorrect number of parameters provided");
-        process::exit(0)
+		println!("Terminating program execution");
+        process::exit(0);
     }
 
     let cli_arg01 = &cli_args[0];
