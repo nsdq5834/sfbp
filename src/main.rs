@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 14/11/2022
-//  Revision: 1.0.6
+//  Revision date: 04/13/2022
+//  Revision: 1.0.7
 
 #![allow(unused)]
 
@@ -432,12 +432,12 @@ fn main() {
             }
         }
 
-        for x in 0..drive_count {
-            info!(
-                "Number of source directories on {:?} = {:?}",
-                hard_drive_id[x], hard_drive_ct[x]
-            );
-        }
+//        for x in 0..drive_count {
+//            info!(
+//                "Number of source directories on {:?} = {:?}",
+//                hard_drive_id[x], hard_drive_ct[x]
+//            );
+//        }
         info!("Number of target directories created = {:?}", my_new_dir);
     }
 
