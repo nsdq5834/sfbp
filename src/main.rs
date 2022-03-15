@@ -393,7 +393,7 @@ fn main() {
         let mut path_string = String::with_capacity(100);
 
 		bkup_list_1.sort();
-		println!("bkup_list_1 size is {:?}", bkup_list_1.len());
+//		println!("bkup_list_1 size is {:?}", bkup_list_1.len());
 
         for entry in &bkup_list_1 {
             if entry.is_dir() {
@@ -534,13 +534,10 @@ fn main() {
     //	Output some information and then terminate the execution.
 
     info!("File backup operation(s) complete!");
-    info!("Total files copied =     {:.0}", files_copied_f64);
-    info!("Total new files copied = {:.0}", copy_new_f64);
-    info!("Total fles refreshed =   {:.0}", copy_ref_f64);
-    info!(
-        "Time to perform backups = {:.2} seconds.",
-        start_now.elapsed().as_secs_f64()
-    );
+    info!("Total files processed   = {:.0}", files_copied_f64);
+    info!("Total new files copied  = {:.0}", copy_new_f64);
+    info!("Total fles refreshed    = {:.0}", copy_ref_f64);
+    info!("Time to perform backups = {:.2} seconds.", start_now.elapsed().as_secs_f64());
 
     if files_copied_f64 > 0.0 {
         info!(
