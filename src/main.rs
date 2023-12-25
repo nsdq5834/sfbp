@@ -2,8 +2,8 @@
 //  Author: Bill Meany
 //  Date: 04/03/2020
 //  Version: 1.0.0
-//  Revision date: 04/13/2022
-//  Revision: 1.0.7
+//  Revision date: 12/14/2023
+//  Revision: 1.0.8
 
 #![allow(unused)]
 
@@ -13,6 +13,7 @@
 //	Bring in code we need.
 
 use log::info;
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -24,11 +25,23 @@ use std::time::{Duration, Instant};
 
 use walkdir::WalkDir;
 
+use clap::{Parser};
+
+#[derive(Parser)]
+#[command(name = "sfbp")]
+#[command(author = "Bill Meany bill.meany@proton.me")]
+#[command(version = "1.0.8")]
+#[command(about = "Simple File Backup Program", long_about = None)]
+
+struct Cli {
+    /// Primary location for the log file, examble C:\Logs\
+    log_location: String,
+}
+
 //	Get some local functions from lib.rs
 
 use sfbp::construct_lf_name;
 use sfbp::get_meta;
-use sfbp::house_keeping;
 use sfbp::make_file_writable;
 use sfbp::setup_logger;
 
@@ -68,12 +81,18 @@ const FILE_ATTRIBUTE_EA: u32 = 0x00040000;
 fn main() {
 	
     info!("Beginning program execution");
+	
+//	Use the clap crate to parse our command line.
+	
+	let cli = Cli::parse();
 
-    //	All of the variable we define here are in the scope of the entire program.
+//	All of the variable we define here are in the scope of the entire program.
 
     let mut log_file_name = String::with_capacity(255);
     let log_file_prefix = String::from("\\Log_");
     let mut program_name = String::with_capacity(25);
+	let mut program_exe = String::with_capacity(25);
+	let mut parm_file = String::with_capacity(50);
     let mut backup_source = String::new();
     let mut exclude_source = String::new();
     let mut target_base = String::new();
@@ -87,9 +106,9 @@ fn main() {
     let mut copy_ref_f64: f64 = 0.0;
     let mut mean_file_size_f64: f64 = 0.0;
 
-    //	Define some mutable variable we will use for file metadata.
-    //	We define two sets so we can perform comparisons between the
-    //	source and target data sets.
+//	Define some mutable variable we will use for file metadata.
+//	We define two sets so we can perform comparisons between the
+//	source and target data sets.
 
     let mut source_file_attrib: u32 = 0;
     let mut source_creation_time: u64 = 0;
@@ -113,31 +132,30 @@ fn main() {
     let mut hard_drive_id = Vec::<String>::new();
     let mut hard_drive_ct = Vec::<i32>::new();
 
-    //	Do some simple housekeeping using house_keeping from lib.rs
+    let exe_path = env::current_exe().unwrap();
+    let exe_name = exe_path.file_name().unwrap().to_str().unwrap(); 
+	let (program_name, program_exe) = exe_name.split_once(".").unwrap();
 
-    house_keeping(NUMB_PARM, &mut program_name);
+//	Build the log file name using construct_lf_name from lib.rs
 
-    //	Build the log file name using construct_lf_name from lib.rs
-
-    construct_lf_name(&mut log_file_name, &log_file_prefix, &program_name);
-
-    //	Create the log file using setup_logger from lib.rs
+    construct_lf_name(&mut log_file_name, &cli.log_location, &program_name);
 
     setup_logger(&log_file_name, DEBUG_FLAG).expect("failed to initialize logging.");
 
-    //	Log file has been opened so we can proceed.
+//	Log file has been opened so we can proceed.
 
     info!("Beginning program execution");
     info!("File backup operation(s) initiated");
+	
     let start_now = Instant::now();
 
-    //	Construct the name of our parameter file, and then create a path to it.
-    //	Create a code block so that objects, variable, etc. related to the
-    //	parameter file go away when we are done with them.
+//	Construct the name of our parameter file, and then create a path to it.
+//	Create a code block so that objects, variable, etc. related to the
+//	parameter file go away when we are done with them.
 
     {
-        let mut parm_file = program_name.clone();
-        parm_file.push_str(".parms");
+        let parm_file = program_name.to_owned() + ".parms";
+
 
         info!("Attempting to open {}", parm_file);
 
@@ -150,11 +168,11 @@ fn main() {
             }
         };
 
-        //	If we are here then we have opened up the file.
-        //	Next step is to establish a handle to the file,
-        //	and then see if we can read the file ignoring any
-        //	comments in the file. A comment will start with the
-        //	# character.
+//	If we are here then we have opened up the file.
+//	Next step is to establish a handle to the file,
+//	and then see if we can read the file ignoring any
+//	comments in the file. A comment will start with the
+//	# character.
 
         let pf_handle = BufReader::new(fh);
 
@@ -205,9 +223,10 @@ fn main() {
 		
     }
 
-    //	This code block processes the source directories file.
-    //	We will build the list of directories into bkup_list_1.
-    //	We also populate hard_drive_id and hard_drive_ct for use later.
+//	This code block processes the source directories file.
+//	We will build the list of directories into bkup_list_1.
+//	We also populate hard_drive_id and hard_drive_ct for use later.
+
     {
         let fh = match File::open(backup_source) {
             Ok(file) => file,
@@ -237,7 +256,7 @@ fn main() {
             }
         }
 
-        //	Drive list will be small, but we will sort it anyway
+//	Drive list will be small, but we will sort it anyway
 
         hard_drive_id.sort();
 
@@ -248,8 +267,8 @@ fn main() {
         info!("Number of base directories to backup is {}", _numbkup_master);
     }
 
-    //	This code block processes the exclude directories file.
-    //	We will build the list of exclude directories into exclude_list_1.
+//	This code block processes the exclude directories file.
+//	We will build the list of exclude directories into exclude_list_1.
 
     {
         let fh = match File::open(exclude_source) {
@@ -273,8 +292,8 @@ fn main() {
     }
 
     {
-        //	Following code block obtains the metadata about the provided target
-        //	backup directory and validates that it is a directory.
+//	Following code block obtains the metadata about the provided target
+//	backup directory and validates that it is a directory.
 
         let mut work_path_buffer = PathBuf::new();
         work_path_buffer.push(&target_base);
@@ -297,14 +316,14 @@ fn main() {
         }
     }
 
-    //
-    //	Next step is to build a list of all the files and directories that may
-    //	be candidates for a backup.
-    //
-    //	bkup_master contains the list of source directories from the source file.
-	//	bkup_list_1 contains the preliminary list of source directories in current directory.
-	//  bkup_list_2 will contain the list of all potential source directories.
-    //
+//
+//	Next step is to build a list of all the files and directories that may
+//	be candidates for a backup.
+//
+//	bkup_master contains the list of source directories from the source file.
+//	bkup_list_1 contains the preliminary list of source directories in current directory.
+//  bkup_list_2 will contain the list of all potential source directories.
+//
 
 
 	for current_source_entry in &bkup_master {
@@ -314,12 +333,9 @@ fn main() {
 		bkup_list_1.clear();
 		
 		bkup_list_1.push(current_source_entry.to_path_buf());
-//		println!("Current entry in bkup_list_1 {:?}", &bkup_list_1);
 		
 		{
 		
- //       let mut my_count: i32 = 0;
-
         for current_source in &bkup_list_1 {
 			info!("Examining the directory structure of {:?}", &current_source);
             for entry in WalkDir::new(&current_source)
@@ -341,9 +357,9 @@ fn main() {
         info!("Number of potential backups = {:?}", bkup_list_2.len());
 		}
 
-    //	Following block removes entries from bkup_list_2 that have patterns that are
-    //	in exclude_list_1.
-	//  Clear bkup_list_1 so we can build the final list of source directories.
+//	Following block removes entries from bkup_list_2 that have patterns that are
+//	in exclude_list_1.
+//  Clear bkup_list_1 so we can build the final list of source directories.
 
     bkup_list_1.clear();
 
@@ -359,7 +375,7 @@ fn main() {
 
             if !push_flag {
                 bkup_list_1.push(entry.to_path_buf());
-//                info!("bkup_list_1 entry = {:?}", &entry);
+				println!("{:?}",&entry.to_path_buf());
                 push_flag = false;
             }
         }
@@ -372,20 +388,20 @@ fn main() {
 	
 	bkup_list_2.clear();
 
-    //	The following code block processes the entries in the bkup_list_2 vector.
-    //	These are all of the entries that were discovered in the previous block
-    //	and are either a directory or a file entry. The purpose of this block
-    //	is to take each entry that is a source directory and determine if the
-    //	associated target directory exists. To do this, we take a path entry in
-    //	bkup_list_2 and test to see if it is a directory. If it is, then we will
-    //	make a string copy of the path, strip out the colon and then prefix
-    //	the result with target_base to create the target path. We test to see if
-    //	the target exists, and if it does not we will create it.
-    //
-    //	We will use hard_drive_id[?} to increment the counts in hard_drive_ct[?].
+//	The following code block processes the entries in the bkup_list_2 vector.
+//	These are all of the entries that were discovered in the previous block
+//	and are either a directory or a file entry. The purpose of this block
+//	is to take each entry that is a source directory and determine if the
+//	associated target directory exists. To do this, we take a path entry in
+//	bkup_list_2 and test to see if it is a directory. If it is, then we will
+//	make a string copy of the path, strip out the colon and then prefix
+//	the result with target_base to create the target path. We test to see if
+//	the target exists, and if it does not we will create it.
+//
+//	We will use hard_drive_id[?} to increment the counts in hard_drive_ct[?].
 
     {
-//        let mut my_new_dir: i32 = 0;
+
         let mut entry_length: usize = 0;
         let mut drive_count = hard_drive_id.len();
         let mut source_prefix = String::with_capacity(5);
@@ -432,17 +448,11 @@ fn main() {
             }
         }
 
-//        for x in 0..drive_count {
-//            info!(
-//                "Number of source directories on {:?} = {:?}",
-//                hard_drive_id[x], hard_drive_ct[x]
-//            );
-//        }
         info!("Number of target directories created = {:?}", my_new_dir);
     }
 
-    //	The following block of code performs the actual copying of files
-    //	to accomplish a backup.
+//	The following block of code performs the actual copying of files
+//	to accomplish a backup.
 
    
     {
@@ -531,7 +541,7 @@ fn main() {
 //	Close outer code block here
 
 
-    //	Output some information and then terminate the execution.
+//	Output some information and then terminate the execution.
 
     info!("File backup operation(s) complete!");
     info!("Total files processed   = {:.0}", files_copied_f64);
