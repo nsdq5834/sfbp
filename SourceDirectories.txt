@@ -1,3 +1,8 @@
-D:\CodeBase
-D:\Financial
-C:\Quicken Backup
+# Comment lines start with the hash tag
+C:\Users\billm\OneDrive\Desktop
+C:\Q-Backups
+C:\Users\billm\.ssh
+C:\CodeBase
+C:\Financial
+C:\Users\billm\AppData\Roaming\Thunderbird\Profiles\lj8irpdv.default-release\Mail\Local Folders
+C:\Documents
