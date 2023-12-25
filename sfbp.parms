@@ -7,4 +7,4 @@
 #
 BackupSource = SourceDirectories.txt
 ExcludeSource = SourceDirectoriesExclude.txt
-BackupBaseLocation = D:\TestBackup\@BU\
+BackupBaseLocation = D:\@BU\
