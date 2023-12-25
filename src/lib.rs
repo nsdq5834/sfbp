@@ -6,59 +6,18 @@
 ///  Revision: 1.0.10
 
 use log::info;
-use std::convert::TryInto;
-use std::env;
 use std::fs;
 use std::os::windows::prelude::*;
 use std::path::Path;
-use std::process;
-
-//	Simple housekeeping routine. Check to see if the correct number of para-
-//	meters were present on the command line. If so, isolate the program name
-//	and return it to the caller.
-//
-//	Function parameters:
-//
-//	nparm - number of command line arguments expected
-//	pgm_name - name of the program we were invoked under
-//
-
-pub fn house_keeping(nparm: u16, pgm_name: &mut String) {
-	
-    let cli_args: Vec<String> = env::args().collect();
-
-    if cli_args.len() != nparm.try_into().unwrap() {
-        println!("Incorrect number of parameters provided");
-		println!("Terminating program execution");
-        process::exit(0);
-    }
-
-    let cli_arg01 = &cli_args[0];
-    let cli_arg01_tokens: Vec<&str> = cli_arg01.split('\\').collect();
-    let full_prog_name: Vec<&str> = cli_arg01_tokens[2].split('.').collect();
-    let just_program: String = full_prog_name[0].to_owned();
-    pgm_name.push_str(&just_program);
-}
-
-//	Build a name for our log file.
-//
-//	Function parameters:
-//
-//	lfn - mutable reference to callers variable
-//	lfp - reference to the log file prefix value
-//	jpn - reference to the current program name
-//
-//	Example log file name might be:
-//
-//	C:\Logs\my_program\Log_20200101-070707.txt
-//
 
 pub fn construct_lf_name(lfn: &mut String, lfp: &str, jpn: &str) {
-    let cli_args: Vec<String> = env::args().collect();
-    let cli_arg02 = &cli_args[1];
-    lfn.push_str(&cli_arg02.to_owned());
-    lfn.push_str(jpn);
+//    let cli_args: Vec<String> = env::args().collect();
+//    let cli_arg02 = &cli_args[1];
+//    lfn.push_str(&cli_arg02.to_owned());
+//	println!("{:?}",&lfn);
     lfn.push_str(lfp);
+    lfn.push_str(jpn);
+    lfn.push_str("\\Log_");
 
     let right_now: String = chrono::Local::now().format("%Y%m%d-%H%M%S").to_string();
     lfn.push_str(&right_now);
